@@ -1,0 +1,23 @@
+plugins {
+  id 'qupath.common-conventions'
+  id 'qupath.publishing-conventions'
+  id 'java-library'
+}
+
+ext.moduleName = 'qupath.core'
+archivesBaseName = 'qupath-core'
+description = "Core QuPath module containing the main classes and datastructures."
+
+configurations {
+  implementation.extendsFrom guava
+}
+
+dependencies {
+  api libs.gson
+  api libs.jts
+  
+  implementation libs.commons.math
+  implementation libs.picocli
+  implementation libs.imagej
+  
+}

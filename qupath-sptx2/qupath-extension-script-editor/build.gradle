@@ -1,0 +1,16 @@
+plugins {
+  id 'qupath.extension-conventions'
+  id 'java-library'
+}
+
+ext.moduleName = 'qupath.extension.scripteditor'
+archivesBaseName = 'qupath-extension-script-editor'
+description = "QuPath extension to provide an alternative script editor using RichTextFX."
+
+dependencies {
+  implementation libs.bundles.groovy
+  implementation libs.bundles.markdown
+  implementation libs.richtextfx
+  implementation libs.snakeyaml
+  implementation libs.guava
+}

@@ -1,0 +1,103 @@
+import java.awt.LayoutManager
+
+plugins {
+  id 'java-library'
+  // To create a shadow/fat jar, including dependencies
+  id 'com.github.johnrengelman.shadow' version '7.0.0'
+}
+
+repositories {
+  // Use this only for local development!
+  // mavenLocal()
+
+  mavenCentral()
+  
+  maven {
+    url "https://maven.scijava.org/content/repositories/releases"
+  }
+  
+  maven {
+    url "https://maven.scijava.org/content/repositories/snapshots"
+  }
+  
+}
+
+ext.moduleName = 'qupath.extension.sptx2'
+
+description = 'QuPath extension for Spatial Transcriptomics'
+
+version = "0.4.3"
+
+dependencies {
+    def qupathVersion = "0.4.3" // For now
+    
+    shadow "io.github.qupath:qupath-gui-fx:${qupathVersion}"
+
+    implementation group: 'org.imgscalr', name: 'imgscalr-lib', version: '4.2'
+    implementation group: 'com.opencsv', name: 'opencsv', version: '5.5.2'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.11.0'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+    implementation group: 'net.mahdilamb', name: 'colormap', version: '0.9.61'
+    implementation group: 'org.hdfgroup', name: 'hdf-java', version: '2.6.1'
+	implementation group: 'org.ini4j', name: 'ini4j', version: '0.5.4'
+	implementation group: 'org.json', name: 'json', version: '20230227'
+	implementation group: 'commons-io', name: 'commons-io', version: '2.11.0'
+    implementation project(':qupath-extension-stardist')
+	
+    testImplementation "io.github.qupath:qupath-gui-fx:${qupathVersion}"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.2"
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+        
+//    implementation fileTree(dir: './stand_backend', include: ['*.py', '*.ini', '*.model.h5'])
+//    implementation fileTree(dir: './stardist_models', include: ['*.pb'])
+}
+
+processResources {
+  from ("${projectDir}/LICENSE.txt") {
+    into 'licenses/'
+  }
+}
+
+tasks.register("copyDependencies", Copy) {
+    description "Copy dependencies into the build directory for use elsewhere"
+    group "QuPath"
+    
+    from configurations.default
+    into 'build/libs'
+}
+
+/*
+ * Ensure Java 11 compatibility
+ */
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+    if (project.properties['sources'])
+	    withSourcesJar()
+    if (project.properties['javadocs'])
+	    withJavadocJar()
+}
+
+/*
+ * Create javadocs for all modules/packages in one place.
+ * Use -PstrictJavadoc=true to fail on error with doclint (which is rather strict).
+ */
+def strictJavadoc = findProperty('strictJavadoc')
+if (!strictJavadoc) {
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+}
+    
+/*
+ * Avoid 'Entry .gitkeep is a duplicate but no duplicate handling strategy has been set.'
+ * when using withSourcesJar()
+ */
+tasks.withType(org.gradle.jvm.tasks.Jar) {
+	duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
